@@ -146,27 +146,24 @@ def main() -> None:
     st.markdown(
         """
         <style>
-        /* "50% 줌 느낌"의 컴팩트 기본 레이아웃 */
-        html, body, [class*="css"]  {
-            font-size: 11px !important;
-        }
+        /* 너무 과한 축소로 잘리는 문제를 피한 컴팩트 레이아웃 */
+        html, body { font-size: 13px !important; }
         [data-testid="stSidebar"] {
-            min-width: 170px !important;
-            max-width: 170px !important;
+            min-width: 210px !important;
+            max-width: 210px !important;
         }
         .block-container {
-            padding-top: 0.9rem !important;
-            padding-bottom: 0.8rem !important;
-            padding-left: 1.2rem !important;
-            padding-right: 1.2rem !important;
-            max-width: 2400px !important;
+            padding-top: 1.0rem !important;
+            padding-bottom: 1.0rem !important;
+            padding-left: 1.8rem !important;
+            padding-right: 1.8rem !important;
+            max-width: 1700px !important;
         }
-        h1 { font-size: 1.9rem !important; margin-bottom: 0.3rem !important; }
-        h2, h3 { margin-top: 0.4rem !important; margin-bottom: 0.35rem !important; }
-        [data-testid="stMetricValue"] { font-size: 1.35rem !important; }
-        [data-testid="stMetricLabel"] { font-size: 0.8rem !important; }
-        [data-testid="stDataFrame"] { font-size: 0.72rem !important; }
-        .st-emotion-cache-13ln4jf { gap: 0.55rem !important; } /* column spacing */
+        h1 { font-size: 2.1rem !important; margin-bottom: 0.4rem !important; }
+        h2, h3 { margin-top: 0.55rem !important; margin-bottom: 0.45rem !important; }
+        [data-testid="stMetricValue"] { font-size: 1.55rem !important; }
+        [data-testid="stMetricLabel"] { font-size: 0.9rem !important; }
+        [data-testid="stDataFrame"] { font-size: 0.84rem !important; }
 
         .alert-box {
             border: 2px solid #e74c3c;
