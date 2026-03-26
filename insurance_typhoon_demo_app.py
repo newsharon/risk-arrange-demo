@@ -146,30 +146,46 @@ def main() -> None:
     st.markdown(
         """
         <style>
-        /* 너무 과한 축소로 잘리는 문제를 피한 컴팩트 레이아웃 */
-        html, body { font-size: 13px !important; }
+        /* 약 65% 줌 느낌의 컴팩트 레이아웃 */
+        html, body { font-size: 12.5px !important; }
         [data-testid="stSidebar"] {
-            min-width: 210px !important;
-            max-width: 210px !important;
+            min-width: 190px !important;
+            max-width: 190px !important;
         }
         .block-container {
-            padding-top: 1.0rem !important;
-            padding-bottom: 1.0rem !important;
-            padding-left: 1.8rem !important;
-            padding-right: 1.8rem !important;
-            max-width: 1700px !important;
+            padding-top: 3.2rem !important;
+            padding-bottom: 0.9rem !important;
+            padding-left: 2.8rem !important;
+            padding-right: 2.4rem !important;
+            max-width: 100% !important;
+            overflow: visible !important;
         }
         h1 {
-            font-size: 1.7rem !important;
+            font-size: clamp(3rem, 2.8vw, 2.35rem) !important;
             margin-bottom: 0.4rem !important;
-            line-height: 1.25 !important;
+            margin-top: 0.9rem !important;
+            padding-top: 0.5rem !important;
+            line-height: 1.35 !important;
             white-space: normal !important;
+            overflow-wrap: anywhere !important;
             word-break: keep-all !important;
+            max-width: 100% !important;
+            overflow: visible !important;
         }
-        h2, h3 { margin-top: 0.55rem !important; margin-bottom: 0.45rem !important; }
-        [data-testid="stMetricValue"] { font-size: 1.55rem !important; }
-        [data-testid="stMetricLabel"] { font-size: 0.9rem !important; }
-        [data-testid="stDataFrame"] { font-size: 0.84rem !important; }
+        .block-container > div:first-child {
+            margin-top: 0.8rem !important;
+        }
+        h2, h3 { margin-top: 0.35rem !important; margin-bottom: 0.3rem !important; }
+        [data-testid="stMetricValue"] { font-size: 2rem !important; font-weight: 700 !important; }
+        [data-testid="stMetricLabel"] { font-size: 1.4rem !important; font-weight: 600 !important; }
+        [data-testid="stDataFrame"] { font-size: 0.74rem !important; }
+        @media (max-width: 1200px) {
+            .block-container {
+                padding-top: 2.4rem !important;
+                padding-left: 1.5rem !important;
+                padding-right: 1.2rem !important;
+            }
+        }
 
         .alert-box {
             border: 2px solid #e74c3c;
