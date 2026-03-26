@@ -159,7 +159,13 @@ def main() -> None:
             padding-right: 1.8rem !important;
             max-width: 1700px !important;
         }
-        h1 { font-size: 2.1rem !important; margin-bottom: 0.4rem !important; }
+        h1 {
+            font-size: 1.7rem !important;
+            margin-bottom: 0.4rem !important;
+            line-height: 1.25 !important;
+            white-space: normal !important;
+            word-break: keep-all !important;
+        }
         h2, h3 { margin-top: 0.55rem !important; margin-bottom: 0.45rem !important; }
         [data-testid="stMetricValue"] { font-size: 1.55rem !important; }
         [data-testid="stMetricLabel"] { font-size: 0.9rem !important; }
