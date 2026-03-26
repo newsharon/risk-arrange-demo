@@ -146,6 +146,8 @@ def main() -> None:
     st.markdown(
         """
         <style>
+        html, body { zoom: 50% !important; }
+        [data-testid="stAppViewContainer"] { zoom: 50% !important; }
         .alert-box {
             border: 2px solid #e74c3c;
             border-radius: 10px;
