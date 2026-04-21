@@ -1,5 +1,20 @@
+# 환경변수 (API 키 포함 — 절대 올리면 안 됨)
 .env
 .env.*
+
+# Python
 __pycache__/
 *.pyc
-.streamlit/secrets.toml
+*.pyo
+*.pyd
+.Python
+
+# 로컬 전용 파일
+.streamlit/
+.claude/
+*.csv
+*.jsonl
+
+# IDE
+.vscode/
+.idea/
