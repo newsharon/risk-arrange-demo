@@ -892,6 +892,9 @@ sidebar = html.Div([
             dbc.NavLink([html.I(className="fa-solid fa-chart-column me-2"), "재물 UW 현황"],
                         href="/property-region", active="exact",
                         style={"color": "#b0c4d8", "fontWeight": "600", "padding": "10px 24px"}),
+            dbc.NavLink([html.I(className="fa-solid fa-user-shield me-2"), "D&O 언더라이팅 지원"],
+                        href="/dno", active="exact",
+                        style={"color": "#b0c4d8", "fontWeight": "600", "padding": "10px 24px"}),
         ], vertical=True, pills=True),
     ], style={"marginTop": "16px"}),
 
@@ -3388,6 +3391,482 @@ def layout_property_region() -> html.Div:
     ])
 
 
+# ── 페이지 7: D&O 언더라이팅 지원 ──────────────────────────────────────────────
+DNO_COMPANIES: List[Dict[str, Any]] = [
+    {
+        "biz_reg_no": "120-81-12345", "company_name": "현대제철", "holding_company": "현대글로비스",
+        "industry": "철강", "main_business": "고로/전기로 기반 철강 제품 제조, 자동차강판·후판 생산",
+        "financials": [
+            {"period": "당기", "revenue": 245_000, "op_income": 8_200, "net_income": 3_100, "assets": 412_000, "liabilities": 198_000},
+            {"period": "전기", "revenue": 251_000, "op_income": 9_800, "net_income": 4_500, "assets": 405_000, "liabilities": 192_000},
+            {"period": "전전기", "revenue": 238_000, "op_income": 11_200, "net_income": 5_900, "assets": 396_000, "liabilities": 187_000},
+        ],
+        "major_shareholders": [{"name": "현대자동차", "pct": 51}, {"name": "현대비앤지스틸", "pct": 20}, {"name": "비제이파워", "pct": 10}],
+        "news": [
+            {"headline": "현대제철, 전기로 신설 투자 1조원 발표", "summary": "탄소중립 대응 위한 친환경 전기로 신증설 추진"},
+            {"headline": "현대제철 노조, 임단협 잠정합의", "summary": "기본급 인상 및 성과급 지급안 합의"},
+            {"headline": "현대제철, 자동차강판 수출 확대", "summary": "북미 현지 완성차 업체 공급 물량 증가"},
+            {"headline": "현대제철 당진공장 환경설비 보강", "summary": "대기오염물질 저감 설비 투자 발표"},
+            {"headline": "철강업계 원자재가 상승 우려", "summary": "철광석/원료탄 가격 상승에 따른 원가 부담 가중"},
+        ],
+        "relations": [
+            {"type": "계열", "name": "현대자동차"}, {"type": "계열", "name": "기아"},
+            {"type": "협력", "name": "현대글로비스"}, {"type": "공동프로젝트", "name": "POSCO(공동 R&D)"},
+        ],
+    },
+    {
+        "biz_reg_no": "215-86-22220", "company_name": "동희산업", "holding_company": "동희그룹",
+        "industry": "자동차부품", "main_business": "자동차 차체/연료시스템 부품 제조 및 모듈 조립",
+        "financials": [
+            {"period": "당기", "revenue": 18_500, "op_income": -420, "net_income": -680, "assets": 22_000, "liabilities": 14_800},
+            {"period": "전기", "revenue": 19_100, "op_income": -310, "net_income": -390, "assets": 21_500, "liabilities": 14_200},
+            {"period": "전전기", "revenue": 20_300, "op_income": -150, "net_income": -210, "assets": 21_000, "liabilities": 13_600},
+        ],
+        "major_shareholders": [{"name": "동희홀딩스", "pct": 62}, {"name": "현대자동차", "pct": 15}, {"name": "기아", "pct": 8}],
+        "news": [
+            {"headline": "동희산업, 평택공장 가동률 회복", "summary": "완성차 생산 정상화로 부품 발주량 증가"},
+            {"headline": "동희산업 3년 연속 영업손실 지속", "summary": "원자재가 상승 및 고객사 단가 인하 압박이 원인"},
+            {"headline": "동희산업, 전기차 부품 라인 증설 검토", "summary": "전동화 대응 위한 신규 투자 검토 중"},
+            {"headline": "동희산업 협력사 대금 지급 지연 논란", "summary": "일부 2차 협력사 대금 지급 지연 보도"},
+            {"headline": "동희산업 노사, 구조조정안 논의", "summary": "실적 악화에 따른 인력 재배치 협의"},
+        ],
+        "relations": [
+            {"type": "계열", "name": "동희홀딩스"}, {"type": "협력", "name": "현대자동차"},
+            {"type": "협력", "name": "기아"}, {"type": "공동프로젝트", "name": "평택 부품단지(공동입주)"},
+        ],
+    },
+    {
+        "biz_reg_no": "609-81-33310", "company_name": "동성화학", "holding_company": "동성그룹",
+        "industry": "정밀화학", "main_business": "폴리우레탄 원료, 정밀화학 소재 제조",
+        "financials": [
+            {"period": "당기", "revenue": 9_200, "op_income": 310, "net_income": 180, "assets": 11_500, "liabilities": 6_400},
+            {"period": "전기", "revenue": 8_700, "op_income": 250, "net_income": 120, "assets": 11_100, "liabilities": 6_200},
+            {"period": "전전기", "revenue": 9_900, "op_income": 480, "net_income": 350, "assets": 10_800, "liabilities": 5_900},
+        ],
+        "major_shareholders": [{"name": "동성홀딩스", "pct": 45}, {"name": "이사회 임원진", "pct": 12}, {"name": "국민연금", "pct": 7}],
+        "news": [
+            {"headline": "동성화학, 친환경 소재 신제품 출시", "summary": "바이오 기반 폴리우레탄 원료 양산 개시"},
+            {"headline": "동성화학 부산공장 안전점검 실시", "summary": "정기 소방/위험물 안전점검 완료"},
+            {"headline": "동성화학, 베트남 생산법인 설립 검토", "summary": "동남아 시장 진출 위한 현지 투자 검토"},
+            {"headline": "정밀화학 업종 수출 회복세", "summary": "전자/자동차용 소재 수요 증가로 업종 전반 개선"},
+            {"headline": "동성화학 ESG 경영 보고서 발간", "summary": "온실가스 감축 목표 및 추진 현황 공개"},
+        ],
+        "relations": [
+            {"type": "계열", "name": "동성홀딩스"}, {"type": "협력", "name": "여천NCC"},
+            {"type": "협력", "name": "남해화학"},
+        ],
+    },
+    {
+        "biz_reg_no": "402-81-44115", "company_name": "남해화학", "holding_company": "롯데정밀화학",
+        "industry": "비료/화학", "main_business": "화학비료 및 산업용 화학제품 제조",
+        "financials": [
+            {"period": "당기", "revenue": 28_400, "op_income": 1_650, "net_income": 980, "assets": 35_200, "liabilities": 16_100},
+            {"period": "전기", "revenue": 27_100, "op_income": 1_420, "net_income": 820, "assets": 34_000, "liabilities": 15_600},
+            {"period": "전전기", "revenue": 25_900, "op_income": 1_180, "net_income": 690, "assets": 32_800, "liabilities": 15_100},
+        ],
+        "major_shareholders": [{"name": "롯데정밀화학", "pct": 38}, {"name": "농협경제지주", "pct": 20}, {"name": "국민연금", "pct": 6}],
+        "news": [
+            {"headline": "남해화학, 비료 수출 물량 확대", "summary": "동남아 농업 수요 증가에 따른 수출 호조"},
+            {"headline": "남해화학 여수공장 탄소 저감 투자", "summary": "공정 효율화를 통한 온실가스 배출 감축"},
+            {"headline": "남해화학, 신규 산업용 화학제품 라인업 강화", "summary": "고부가 화학제품 비중 확대 전략 발표"},
+            {"headline": "비료업계 원료가 안정세 진입", "summary": "국제 원료 가격 하락으로 원가 부담 완화"},
+            {"headline": "남해화학 협력사 동반성장 협약 체결", "summary": "중소 협력사 대상 기술/자금 지원 프로그램 발표"},
+        ],
+        "relations": [
+            {"type": "계열", "name": "롯데정밀화학"}, {"type": "협력", "name": "동성화학"},
+            {"type": "공동프로젝트", "name": "여수산단 공동물류(공동운영)"},
+        ],
+    },
+    {
+        "biz_reg_no": "851-86-55230", "company_name": "여천NCC", "holding_company": "한화/DL케미칼 합작",
+        "industry": "석유화학", "main_business": "에틸렌 등 기초유분(NCC) 생산",
+        "financials": [
+            {"period": "당기", "revenue": 52_000, "op_income": -1_800, "net_income": -2_400, "assets": 61_000, "liabilities": 38_500},
+            {"period": "전기", "revenue": 55_500, "op_income": -950, "net_income": -1_300, "assets": 60_200, "liabilities": 36_900},
+            {"period": "전전기", "revenue": 58_900, "op_income": 620, "net_income": 410, "assets": 58_700, "liabilities": 34_800},
+        ],
+        "major_shareholders": [{"name": "한화토탈에너지스", "pct": 50}, {"name": "DL케미칼", "pct": 50}],
+        "news": [
+            {"headline": "여천NCC 2년 연속 영업손실, 업황 부진 지속", "summary": "에틸렌 스프레드 악화로 적자폭 확대"},
+            {"headline": "여천NCC, 설비 가동률 조정 검토", "summary": "수익성 개선 위한 생산량 조절 논의"},
+            {"headline": "석유화학 업계 구조조정 가시화", "summary": "공급 과잉 해소를 위한 업계 전반 설비 재편 논의"},
+            {"headline": "여천NCC 여수공장 정기보수 완료", "summary": "공정 안전 점검 및 설비 보수 작업 마무리"},
+            {"headline": "한화·DL케미칼, 합작 구조 재검토설", "summary": "지속된 실적 악화에 따른 지분 구조 조정 가능성 보도"},
+        ],
+        "relations": [
+            {"type": "계열", "name": "한화토탈에너지스"}, {"type": "계열", "name": "DL케미칼"},
+            {"type": "협력", "name": "동성화학"}, {"type": "공동프로젝트", "name": "여수산단 공동물류(공동운영)"},
+        ],
+    },
+    {
+        "biz_reg_no": "134-81-66440", "company_name": "한화토탈", "holding_company": "한화토탈에너지스",
+        "industry": "석유화학/정유", "main_business": "납사 기반 석유화학 제품 및 윤활유 생산",
+        "financials": [
+            {"period": "당기", "revenue": 98_000, "op_income": 4_100, "net_income": 2_300, "assets": 121_000, "liabilities": 58_000},
+            {"period": "전기", "revenue": 95_200, "op_income": 3_400, "net_income": 1_900, "assets": 118_500, "liabilities": 56_200},
+            {"period": "전전기", "revenue": 102_500, "op_income": 5_600, "net_income": 3_800, "assets": 116_000, "liabilities": 54_500},
+        ],
+        "major_shareholders": [{"name": "한화솔루션", "pct": 50}, {"name": "토탈에너지스(프랑스)", "pct": 50}],
+        "news": [
+            {"headline": "한화토탈, 친환경 윤활유 신제품 출시", "summary": "저탄소 윤활유 라인업 확대 발표"},
+            {"headline": "한화토탈 울산공장 안전사고 0건 달성", "summary": "무재해 경영 인증 획득"},
+            {"headline": "한화토탈, 해외 합작법인 추가 검토", "summary": "토탈에너지스와 동남아 합작 신규 검토"},
+            {"headline": "정유화학 업계 수익성 개선 기대", "summary": "정제마진 회복에 따른 업종 전반 실적 개선 전망"},
+            {"headline": "한화토탈, 탄소포집 실증사업 추진", "summary": "CCUS 기술 적용 위한 실증 프로젝트 착수"},
+        ],
+        "relations": [
+            {"type": "계열", "name": "한화솔루션"}, {"type": "계열", "name": "여천NCC"},
+            {"type": "협력", "name": "고려아연"},
+        ],
+    },
+    {
+        "biz_reg_no": "301-81-77580", "company_name": "삼우물류", "holding_company": None,
+        "industry": "물류/창고", "main_business": "산업단지 종합물류 및 창고 운영",
+        "financials": [
+            {"period": "당기", "revenue": 4_100, "op_income": 220, "net_income": 130, "assets": 6_800, "liabilities": 3_900},
+            {"period": "전기", "revenue": 3_900, "op_income": 190, "net_income": 100, "assets": 6_500, "liabilities": 3_800},
+            {"period": "전전기", "revenue": 3_700, "op_income": 160, "net_income": 80, "assets": 6_300, "liabilities": 3_700},
+        ],
+        "major_shareholders": [{"name": "최대주주(개인)", "pct": 55}, {"name": "임원진", "pct": 18}],
+        "news": [
+            {"headline": "삼우물류, 당진센터 증축 완료", "summary": "철강 물류 수요 대응 위한 창고 증축"},
+            {"headline": "삼우물류, 콜드체인 사업 진출 검토", "summary": "신규 사업영역 확대 추진"},
+        ],
+        "relations": [{"type": "협력", "name": "현대제철"}],
+    },
+]
+
+DNO_COMPANY_INDEX: Dict[str, Dict[str, Any]] = {c["company_name"]: c for c in DNO_COMPANIES}
+
+# 계약자명 기준 — PROPERTY_CONTRACTS_DF 보유 회사는 당사 계약 정보를 매핑, 없는 회사는 None(당사계약 없음 데모)
+DNO_CONTRACTS: Dict[str, Optional[Dict[str, Any]]] = {
+    "현대제철": {
+        "contract_holder": "현대제철", "insured": "현대제철 임원진 일체", "product_name": "Corporate Guard(KF2005)",
+        "underwriter": "당사 단독인수", "disclosure_note": "DART 공시 기준 특이 소송 없음",
+        "limit_krw": 30_000_000_000, "loss_ratio_1y": 12, "loss_ratio_3y": 18, "loss_ratio_5y": 22,
+        "status": "유지", "contract_no": "TCS-2026-DO-00101",
+    },
+    "동희산업": {
+        "contract_holder": "동희산업", "insured": "동희산업 임원진 일체", "product_name": "Executive Shield(EX1003)",
+        "underwriter": "공동인수(당사 40%)", "disclosure_note": "최근 3개년 영업손실 지속 — 면책조항 검토 필요",
+        "limit_krw": 5_000_000_000, "loss_ratio_1y": 45, "loss_ratio_3y": 38, "loss_ratio_5y": 30,
+        "status": "유지", "contract_no": "TCS-2026-DO-00203",
+    },
+    "여천NCC": {
+        "contract_holder": "여천NCC", "insured": "여천NCC 임원진 일체", "product_name": "Corporate Guard(KF2005)",
+        "underwriter": "당사 단독인수", "disclosure_note": "2개년 연속 영업손실 — 갱신 시 보유율 축소 검토",
+        "limit_krw": 10_000_000_000, "loss_ratio_1y": 28, "loss_ratio_3y": 25, "loss_ratio_5y": 19,
+        "status": "과거계약(만기)", "contract_no": "TCS-2025-DO-00187",
+    },
+    "한화토탈": {
+        "contract_holder": "한화토탈", "insured": "한화토탈 임원진 일체", "product_name": "Executive Shield(EX1003)",
+        "underwriter": "당사 단독인수", "disclosure_note": "DART 공시 기준 특이사항 없음",
+        "limit_krw": 15_000_000_000, "loss_ratio_1y": 8, "loss_ratio_3y": 11, "loss_ratio_5y": 14,
+        "status": "유지", "contract_no": "TCS-2026-DO-00254",
+    },
+    "동성화학": None,
+    "남해화학": None,
+    "삼우물류": None,
+}
+
+
+def _find_dno_company(query: str) -> Optional[Dict[str, Any]]:
+    """사업자번호 또는 기업명(부분일치)으로 D&O 더미 기업 검색"""
+    q = (query or "").strip()
+    if not q:
+        return None
+    for c in DNO_COMPANIES:
+        if c["biz_reg_no"] == q:
+            return c
+    for c in DNO_COMPANIES:
+        if q in c["company_name"]:
+            return c
+    return None
+
+
+def _fmt_eok(v: float) -> str:
+    return f"{v:,.0f}억"
+
+
+def _build_dno_financial_table(company: Dict[str, Any]) -> dbc.Table:
+    rows = []
+    for f in company["financials"]:
+        op_color = "#e74c3c" if f["op_income"] < 0 else "#1a2942"
+        rows.append(html.Tr([
+            html.Td(f["period"], style={"fontSize":"0.82rem","fontWeight":"700"}),
+            html.Td(_fmt_eok(f["revenue"]), style={"fontSize":"0.8rem","textAlign":"right"}),
+            html.Td(_fmt_eok(f["op_income"]), style={"fontSize":"0.8rem","textAlign":"right","color":op_color,"fontWeight":"700"}),
+            html.Td(_fmt_eok(f["net_income"]), style={"fontSize":"0.8rem","textAlign":"right"}),
+            html.Td(_fmt_eok(f["assets"]), style={"fontSize":"0.8rem","textAlign":"right"}),
+            html.Td(_fmt_eok(f["liabilities"]), style={"fontSize":"0.8rem","textAlign":"right"}),
+        ]))
+    return dbc.Table([
+        html.Thead(html.Tr([
+            html.Th("", style={"fontSize":"0.78rem"}),
+            html.Th("매출액", style={"fontSize":"0.78rem","textAlign":"right"}),
+            html.Th("영업이익", style={"fontSize":"0.78rem","textAlign":"right"}),
+            html.Th("당기순익", style={"fontSize":"0.78rem","textAlign":"right"}),
+            html.Th("자산", style={"fontSize":"0.78rem","textAlign":"right"}),
+            html.Th("부채", style={"fontSize":"0.78rem","textAlign":"right"}),
+        ], style={"background":"#f8f9fa"})),
+        html.Tbody(rows),
+    ], bordered=False, striped=True, hover=True, size="sm", responsive=True)
+
+
+def _build_dno_news_section(company: Dict[str, Any]) -> html.Div:
+    cards = []
+    for n in company["news"]:
+        cards.append(dbc.Col(html.Div([
+            html.Div(n["headline"], style={"fontSize":"0.8rem","fontWeight":"700","color":"#1a2942",
+                                            "minHeight":"38px"}),
+            html.Div(n["summary"], style={"fontSize":"0.74rem","color":"#888","marginTop":"4px"}),
+        ], style={"border":"1px solid #eee","borderRadius":"8px","padding":"10px","height":"100%"}), md=True))
+    return dbc.Row(cards, className="g-2")
+
+
+def _compute_bankruptcy_metrics(company: Dict[str, Any]) -> List[Dict[str, Any]]:
+    metrics = []
+    for f in company["financials"]:
+        debt_ratio = f["liabilities"] / max(f["assets"] - f["liabilities"], 1) * 100
+        op_margin = f["op_income"] / max(f["revenue"], 1) * 100
+        interest_cov = f["op_income"] / 200
+        metrics.append({
+            "period": f["period"],
+            "debt_ratio": debt_ratio,
+            "op_margin": op_margin,
+            "interest_coverage": interest_cov,
+            "credit_rating": "BBB" if op_margin < 0 else ("A-" if op_margin < 5 else "A"),
+        })
+    return metrics
+
+
+def _build_dno_bankruptcy_table(company: Dict[str, Any]) -> html.Div:
+    metrics = _compute_bankruptcy_metrics(company)
+    consecutive_losses = sum(1 for f in company["financials"] if f["op_income"] < 0)
+    rows = []
+    for m in metrics:
+        margin_color = "#e74c3c" if m["op_margin"] < 0 else "#1a2942"
+        rows.append(html.Tr([
+            html.Td(m["period"], style={"fontSize":"0.82rem","fontWeight":"700"}),
+            html.Td(f"{m['debt_ratio']:.0f}%", style={"fontSize":"0.8rem","textAlign":"right"}),
+            html.Td(f"{m['op_margin']:.1f}%", style={"fontSize":"0.8rem","textAlign":"right","color":margin_color,"fontWeight":"700"}),
+            html.Td(f"{m['interest_coverage']:.1f}배", style={"fontSize":"0.8rem","textAlign":"right"}),
+            html.Td(m["credit_rating"], style={"fontSize":"0.8rem","textAlign":"right"}),
+        ]))
+    table = dbc.Table([
+        html.Thead(html.Tr([
+            html.Th("", style={"fontSize":"0.78rem"}),
+            html.Th("차입금/자기자본", style={"fontSize":"0.78rem","textAlign":"right"}),
+            html.Th("영업이익률", style={"fontSize":"0.78rem","textAlign":"right"}),
+            html.Th("이자보상배율", style={"fontSize":"0.78rem","textAlign":"right"}),
+            html.Th("신용등급(추정)", style={"fontSize":"0.78rem","textAlign":"right"}),
+        ], style={"background":"#f8f9fa"})),
+        html.Tbody(rows),
+    ], bordered=False, striped=True, hover=True, size="sm", responsive=True)
+
+    alert = None
+    if consecutive_losses >= 3:
+        alert = html.Div([
+            risk_badge("HIGH"),
+            html.Span(" XoL 면책 검토 필요 — 영업손실 3개년 연속 지속",
+                       style={"fontSize":"0.8rem","color":"#e74c3c","fontWeight":"700","marginLeft":"8px"}),
+        ], style={"marginBottom":"8px"})
+    return html.Div([alert, table] if alert else [table])
+
+
+DNO_RELATION_COLORS = {"계열": "#2980b9", "협력": "#27ae60", "공동프로젝트": "#f39c12"}
+
+
+def _build_dno_relation_graph(company: Dict[str, Any]) -> go.Figure:
+    relations = company["relations"]
+    n = max(len(relations), 1)
+    edge_x, edge_y, edge_colors = [], [], []
+    node_x, node_y, node_text, node_color = [0.0], [0.0], [company["company_name"]], ["#1a2942"]
+
+    fig = go.Figure()
+    for i, rel in enumerate(relations):
+        angle = 2 * pi * i / n
+        x, y = cos(angle), sin(angle)
+        color = DNO_RELATION_COLORS.get(rel["type"], "#888")
+        fig.add_trace(go.Scatter(
+            x=[0, x], y=[0, y], mode="lines",
+            line=dict(color=color, width=2), hoverinfo="skip", showlegend=False,
+        ))
+        node_x.append(x); node_y.append(y)
+        node_text.append(f"{rel['name']} ({rel['type']})")
+        node_color.append(color)
+
+    fig.add_trace(go.Scatter(
+        x=node_x, y=node_y, mode="markers+text",
+        text=[company["company_name"]] + [r["name"] for r in relations],
+        textposition="top center", textfont=dict(size=10),
+        marker=dict(size=[26] + [18] * len(relations), color=node_color, line=dict(width=1, color="white")),
+        hovertext=node_text, hoverinfo="text", showlegend=False,
+    ))
+    for rtype, color in DNO_RELATION_COLORS.items():
+        if any(r["type"] == rtype for r in relations):
+            fig.add_trace(go.Scatter(x=[None], y=[None], mode="markers",
+                                      marker=dict(size=10, color=color), name=rtype))
+
+    fig.update_layout(
+        margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="white", plot_bgcolor="white",
+        height=320, showlegend=True, legend=dict(orientation="h", y=-0.05),
+        xaxis=dict(visible=False, range=[-1.4, 1.4]), yaxis=dict(visible=False, range=[-1.4, 1.4]),
+    )
+    return fig
+
+
+def _build_dno_company_tab(company: Dict[str, Any]) -> html.Div:
+    shareholder_rows = [
+        html.Tr([html.Td(s["name"], style={"fontSize":"0.82rem"}),
+                 html.Td(f"{s['pct']}%", style={"fontSize":"0.82rem","textAlign":"right","fontWeight":"700"})])
+        for s in company["major_shareholders"]
+    ]
+    return html.Div([
+        dbc.Row([
+            dbc.Col([
+                section_header("주요 지표 (당기/전기/전전기, 단위: 억 원)"),
+                _build_dno_financial_table(company),
+                html.Div(f"주력 영위 사업: {company['main_business']}",
+                         style={"fontSize":"0.8rem","color":"#555","marginTop":"6px"}),
+            ], md=7),
+            dbc.Col([
+                section_header("대주주 Top"),
+                dbc.Table([html.Tbody(shareholder_rows)], bordered=False, size="sm"),
+            ], md=5),
+        ], className="mb-3"),
+
+        section_header("주요뉴스"),
+        _build_dno_news_section(company),
+        html.Div(style={"height":"16px"}),
+
+        section_header("파산 위험 체크 (3개년 공시 정보 활용)"),
+        _build_dno_bankruptcy_table(company),
+        html.Div(style={"height":"16px"}),
+
+        section_header("관계도 파악 (계열/협력/공동프로젝트)"),
+        dcc.Graph(figure=_build_dno_relation_graph(company), config={"displayModeBar": False}),
+    ])
+
+
+def _build_dno_contract_tab(company: Dict[str, Any]) -> html.Div:
+    contract = DNO_CONTRACTS.get(company["company_name"])
+    if not contract:
+        return html.Div([
+            section_header("계약정보"),
+            html.Div("당사 계약정보가 없는 기업입니다. (당사 미계약 — 신규 인수 검토 대상)",
+                      style={"fontSize":"0.85rem","color":"#888","padding":"16px 0"}),
+        ])
+
+    status_color = {"유지": "#27ae60", "과거계약(만기)": "#888", "가계약": "#f39c12"}.get(contract["status"], "#888")
+    fields = [
+        ("계약자", contract["contract_holder"]),
+        ("피보험자", contract["insured"]),
+        ("상품명", contract["product_name"]),
+        ("가입 인수", contract["underwriter"]),
+        ("공시 주요사항 (DART 기준)", contract["disclosure_note"]),
+        ("시고감 보상한도", f"{contract['limit_krw']/1e8:,.0f}억 원"),
+        ("손해율 (1개년 / 3개년 / 5개년)",
+         f"{contract['loss_ratio_1y']}% / {contract['loss_ratio_3y']}% / {contract['loss_ratio_5y']}%"),
+        ("계약번호", contract["contract_no"]),
+    ]
+    rows = [
+        html.Tr([html.Td(label, style={"fontSize":"0.82rem","color":"#666","fontWeight":"600","width":"42%"}),
+                 html.Td(value, style={"fontSize":"0.85rem","fontWeight":"700","color":"#1a2942"})])
+        for label, value in fields
+    ]
+    return html.Div([
+        html.Div([
+            section_header("계약정보"),
+            html.Span(contract["status"], style={"background":status_color,"color":"#fff","borderRadius":"4px",
+                      "padding":"2px 10px","fontSize":"0.78rem","fontWeight":"700","marginLeft":"8px"}),
+        ], style={"display":"flex","alignItems":"center"}),
+        dbc.Table([html.Tbody(rows)], bordered=False, size="sm"),
+    ])
+
+
+def layout_dno() -> html.Div:
+    return html.Div([
+        dcc.Store(id="dno-selected-id", data=None),
+
+        html.Div([
+            html.H4("D&O 언더라이팅 지원", style={"fontWeight":"800","color":"#1a2942","margin":0}),
+            html.Div("사업자번호/기업명 조회 → 기업정보(재무·뉴스·파산위험·관계도) / 계약정보 확인",
+                     style={"color":"#888","fontSize":"0.82rem"}),
+        ], style={"marginBottom":"16px"}),
+
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    dcc.Input(
+                        id="dno-search-input", type="text",
+                        placeholder="사업자번호 또는 기업명 입력 (예: 현대제철, 120-81-12345)",
+                        debounce=False,
+                        style={"flex":"1","padding":"7px 12px","borderRadius":"6px",
+                               "border":"1px solid #ccc","fontSize":"0.85rem","marginRight":"8px"},
+                    ),
+                    dbc.Button([html.I(className="fa-solid fa-magnifying-glass me-1"), "조회"],
+                               id="dno-search-btn", color="primary", size="sm",
+                               style={"fontWeight":"700","whiteSpace":"nowrap"}),
+                ], style={"display":"flex","alignItems":"center"}),
+                html.Div(id="dno-search-result", style={"fontSize":"0.78rem","color":"#e74c3c","marginTop":"4px"}),
+            ], md=8),
+        ], className="mb-2"),
+
+        html.Div(id="dno-company-header", style={"marginBottom":"8px"}),
+
+        dbc.Tabs([
+            dbc.Tab(label="기업정보 TAB", tab_id="dno-tab-company"),
+            dbc.Tab(label="계약정보 TAB", tab_id="dno-tab-contract"),
+        ], id="dno-tabs", active_tab="dno-tab-company"),
+
+        dbc.Card(dbc.CardBody(html.Div(id="dno-tab-content")), style={**CARD_STYLE, "marginTop":"12px"}),
+    ])
+
+
+@callback(
+    Output("dno-selected-id", "data"),
+    Output("dno-search-result", "children"),
+    Input("dno-search-btn", "n_clicks"),
+    State("dno-search-input", "value"),
+    prevent_initial_call=True,
+)
+def select_dno_company(n_clicks: Any, search_value: Optional[str]):
+    query = (search_value or "").strip()
+    if not query:
+        return dash.no_update, "사업자번호 또는 기업명을 입력하세요."
+    company = _find_dno_company(query)
+    if not company:
+        return dash.no_update, f"'{query}'에 해당하는 기업을 찾을 수 없습니다."
+    return company["company_name"], ""
+
+
+@callback(
+    Output("dno-company-header", "children"),
+    Output("dno-tab-content", "children"),
+    Input("dno-tabs", "active_tab"),
+    Input("dno-selected-id", "data"),
+)
+def render_dno_tab_content(active_tab: Optional[str], selected_name: Optional[str]):
+    if not selected_name:
+        return None, html.Div("기업을 조회하면 상세 정보가 표시됩니다.",
+                               style={"fontSize":"0.85rem","color":"#888","padding":"24px 0"})
+
+    company = DNO_COMPANY_INDEX.get(selected_name)
+    if not company:
+        return None, html.Div("기업 정보를 찾을 수 없습니다.", style={"fontSize":"0.85rem","color":"#888"})
+
+    header = html.Div([
+        html.Span(company["company_name"], style={"fontSize":"1.1rem","fontWeight":"800","color":"#1a2942"}),
+        html.Span(f"  사업자번호: {company['biz_reg_no']}", style={"fontSize":"0.8rem","color":"#888","marginLeft":"10px"}),
+        html.Span(f"  지주회사: {company['holding_company'] or '-'}", style={"fontSize":"0.8rem","color":"#888","marginLeft":"10px"}),
+    ])
+
+    if active_tab == "dno-tab-contract":
+        return header, _build_dno_contract_tab(company)
+    return header, _build_dno_company_tab(company)
+
+
 # ── 라우팅 ───────────────────────────────────────────────────────────────────
 @callback(Output("page-content", "children"), Input("url", "pathname"))
 def route(pathname: str):
@@ -3401,6 +3880,8 @@ def route(pathname: str):
         return layout_property()
     elif pathname == "/property-region":
         return layout_property_region()
+    elif pathname == "/dno":
+        return layout_dno()
     return layout_home()
 
 
