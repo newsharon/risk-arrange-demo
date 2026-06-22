@@ -165,6 +165,54 @@ DUMMY_FACTORIES = [
     {"factory_id": 25, "factory_name": "롯데케미칼 울산공장",    "industry": "석유화학", "region": "울산", "lat": 35.51, "lon": 129.41},
 ]
 
+# 기후 리스크 지수 — 실제 강수 극한지수 격자데이터(Hazard_Map_Precipitation_Present.csv, 0.01도 격자)에서
+# 각 공장 좌표에 대한 최근접 격자값을 1회 매칭(nearest-neighbor)해 산출. 격자 40만행 전체를 앱에서
+# 적재하지 않고, 물건 단위 포인트 값만 미리 추출해 사용한다.
+# 종합지수 전국 분포: 10%=42 / 25%=45 / 50%=49 / 75%=54 / 90%=58 / 99%=74 (값이 클수록 강수 리스크 높음)
+CLIMATE_RISK_BY_FACTORY: Dict[int, Dict[str, float]] = {
+    1: {"precip_intensity": 49.1, "heavy_rain_days": 50.2, "composite_index": 46.4},
+    2: {"precip_intensity": 65.0, "heavy_rain_days": 55.8, "composite_index": 52.1},
+    3: {"precip_intensity": 41.9, "heavy_rain_days": 45.7, "composite_index": 46.2},
+    4: {"precip_intensity": 52.7, "heavy_rain_days": 50.7, "composite_index": 46.8},
+    5: {"precip_intensity": 66.3, "heavy_rain_days": 54.7, "composite_index": 54.0},
+    6: {"precip_intensity": 52.2, "heavy_rain_days": 49.1, "composite_index": 47.0},
+    7: {"precip_intensity": 40.5, "heavy_rain_days": 41.8, "composite_index": 39.2},
+    8: {"precip_intensity": 43.0, "heavy_rain_days": 43.5, "composite_index": 45.4},
+    9: {"precip_intensity": 61.5, "heavy_rain_days": 53.5, "composite_index": 49.1},
+    10: {"precip_intensity": 42.3, "heavy_rain_days": 45.7, "composite_index": 43.9},
+    11: {"precip_intensity": 47.8, "heavy_rain_days": 46.8, "composite_index": 44.9},
+    12: {"precip_intensity": 43.1, "heavy_rain_days": 41.8, "composite_index": 42.6},
+    13: {"precip_intensity": 51.3, "heavy_rain_days": 46.3, "composite_index": 46.5},
+    14: {"precip_intensity": 42.9, "heavy_rain_days": 41.8, "composite_index": 43.6},
+    15: {"precip_intensity": 44.9, "heavy_rain_days": 42.9, "composite_index": 43.7},
+    16: {"precip_intensity": 48.8, "heavy_rain_days": 45.1, "composite_index": 45.7},
+    17: {"precip_intensity": 65.8, "heavy_rain_days": 51.3, "composite_index": 51.6},
+    18: {"precip_intensity": 44.6, "heavy_rain_days": 45.7, "composite_index": 42.6},
+    19: {"precip_intensity": 74.9, "heavy_rain_days": 69.2, "composite_index": 60.4},
+    20: {"precip_intensity": 51.6, "heavy_rain_days": 53.5, "composite_index": 46.7},
+    21: {"precip_intensity": 61.9, "heavy_rain_days": 53.5, "composite_index": 45.8},
+    22: {"precip_intensity": 53.7, "heavy_rain_days": 54.7, "composite_index": 48.3},
+    23: {"precip_intensity": 49.6, "heavy_rain_days": 49.1, "composite_index": 46.4},
+    24: {"precip_intensity": 64.6, "heavy_rain_days": 58.0, "composite_index": 53.3},
+    25: {"precip_intensity": 51.3, "heavy_rain_days": 47.4, "composite_index": 46.3},
+}
+
+
+def climate_risk_level(composite_index: float) -> str:
+    """전국 분포 백분위 기준 — 상위 10%(>=58) 높음, 하위 25%(<45) 낮음, 나머지 보통"""
+    if composite_index >= 58:
+        return "높음"
+    if composite_index < 45:
+        return "낮음"
+    return "보통"
+
+
+CLIMATE_RISK_COLOR = {"높음": "#e74c3c", "보통": "#f39c12", "낮음": "#27ae60"}
+
+# 전국 강수 리스크 히트맵 레이어용 — 원본 격자(0.01도, 45만행, NaN 다수)를 0.05도로 다운샘플링해
+# 미리 생성해 둔 약 4,300행짜리 경량 파일 (생성 스크립트: scripts/build_climate_grid.py)
+CLIMATE_GRID_DF = pd.read_csv(_ROOT / "climate_grid_0.05deg.csv")
+
 DUMMY_CONTRACTS_FACTORY = [
     # 기업재산보험
     {"factory_id":1, "contract_id":"TCS-2026-PR-00101","lob":"기업재산보험","product_name":"종합재산보험(All Risk)","insured_amount_krw":48_000_000_000,"deductible_krw":150_000_000,"expiry":"2027-03-31","cover_typhoon":True,"cover_flood":True,"cover_wind":True,"cover_bi":True},
@@ -691,6 +739,7 @@ for f in DUMMY_FACTORIES:
         "lat": f["lat"], "lon": f["lon"],
         "industry": f["industry"], "region": f["region"],
         "factory_id": f["factory_id"],
+        "climate_index": CLIMATE_RISK_BY_FACTORY[f["factory_id"]]["composite_index"],
         **seed,
     })
 
@@ -707,6 +756,8 @@ for anchor_id, names in NEIGHBOR_CLUSTERS.items():
             "lat": round(anchor["lat"] + dlat, 5), "lon": round(anchor["lon"] + dlon, 5),
             "industry": anchor["industry"], "region": anchor["region"],
             "factory_id": None,
+            # 격자 해상도(0.01도) 대비 위성물건은 앵커와 매우 가까워 앵커 공장의 기후지수를 그대로 사용
+            "climate_index": CLIMATE_RISK_BY_FACTORY[anchor_id]["composite_index"],
             **seed,
         })
 
@@ -2820,8 +2871,18 @@ def marine_detail(n_clicks_list: List):
 PROPERTY_NO_CONTRACT_COLOR = "#95a5a6"
 
 
-def _build_property_map(lob_filter: str, policyholder_filter: str, selected_id: Optional[str], radius_m: int) -> go.Figure:
+def _build_property_map(lob_filter: str, policyholder_filter: str, selected_id: Optional[str], radius_m: int,
+                         show_climate: bool = False) -> go.Figure:
     fig = go.Figure()
+
+    if show_climate:
+        fig.add_trace(go.Densitymapbox(
+            lat=CLIMATE_GRID_DF["lat"], lon=CLIMATE_GRID_DF["lon"], z=CLIMATE_GRID_DF["composite_index"],
+            radius=14, opacity=0.55, colorscale="YlOrBr", zmin=35, zmax=65,
+            showscale=True, colorbar=dict(title="강수<br>종합지수", len=0.6, x=1.0),
+            hoverinfo="skip", name="기후(강수) 리스크",
+        ))
+
     df = PROPERTY_DF.copy()
 
     if policyholder_filter and policyholder_filter != "전체":
@@ -2914,6 +2975,13 @@ def _build_property_detail(selected_id: Optional[str]) -> html.Div:
                    "padding":"1px 8px","fontWeight":"700"},
         )
 
+    climate_level = climate_risk_level(p["climate_index"])
+    climate_cell = html.Span(
+        f"{climate_level} (종합지수 {p['climate_index']:.1f})",
+        style={"background": CLIMATE_RISK_COLOR[climate_level], "color": "#fff", "borderRadius": "4px",
+               "padding": "1px 8px", "fontWeight": "700"},
+    )
+
     info_rows: List[Tuple[str, Any]] = [
         ("소재지", p["address"]),
         ("업종", p["industry"]),
@@ -2924,6 +2992,7 @@ def _build_property_detail(selected_id: Optional[str]) -> html.Div:
         ("준공년도", f"{p['built_year']}년"),
         ("소방시설", p["fire_grade"]),
         ("화보협 위험등급", risk_grade_cell),
+        ("기후 리스크 (강수, 전국 대비)", climate_cell),
     ]
     info_table = dbc.Table(
         html.Tbody([
@@ -3173,13 +3242,18 @@ def layout_property() -> html.Div:
                     options=[{"label": ph, "value": ph} for ph in policyholders],
                     value="전체", clearable=False, style={"width":"220px","fontSize":"0.83rem"},
                 ),
+                dcc.Checklist(
+                    id="prop-climate-toggle",
+                    options=[{"label": " 기후(강수) 리스크 히트맵 표시", "value": "on"}],
+                    value=[], style={"fontSize":"0.83rem","fontWeight":"600","color":"#444","marginLeft":"20px"},
+                ),
             ], style={"display":"flex","alignItems":"center"}),
         ], style={"marginBottom":"12px"}),
 
         dbc.Row([
             dbc.Col([
                 dbc.Card(dbc.CardBody([
-                    section_header("물건/계약 위치 지도 — 보종별"),
+                    section_header("물건/계약 위치 지도 — 보종별 / 기후(강수) 리스크"),
                     dcc.Graph(id="prop-map", figure=_build_property_map("전체", "전체", None, 500),
                               config={"displayModeBar": False, "scrollZoom": True}, style={"height":"560px"}),
                 ]), style=CARD_STYLE),
@@ -3252,11 +3326,14 @@ def update_property_lob_filter(n_clicks_list: List):
     Input("prop-policyholder-filter", "value"),
     Input("prop-selected-id", "data"),
     Input("prop-radius-select", "value"),
+    Input("prop-climate-toggle", "value"),
     prevent_initial_call=True,
 )
 def update_property_map(lob_filter: Optional[str], policyholder: Optional[str],
-                         selected_id: Optional[str], radius_m: Optional[int]):
-    return _build_property_map(lob_filter or "전체", policyholder or "전체", selected_id, radius_m or 500)
+                         selected_id: Optional[str], radius_m: Optional[int],
+                         climate_toggle: Optional[List[str]]):
+    return _build_property_map(lob_filter or "전체", policyholder or "전체", selected_id, radius_m or 500,
+                                show_climate=bool(climate_toggle))
 
 
 @callback(
@@ -3284,6 +3361,7 @@ def build_region_stats_df() -> pd.DataFrame:
     property_stats = PROPERTY_DF.groupby("region").agg(
         property_count=("property_id", "count"),
         no_contract_count=("has_contract", lambda s: int((~s).sum())),
+        avg_climate_index=("climate_index", "mean"),
     ).reset_index()
 
     df = property_stats.merge(contract_stats, on="region", how="left").fillna(0)
@@ -3291,15 +3369,16 @@ def build_region_stats_df() -> pd.DataFrame:
         df[col] = df[col].astype("int64")
 
     df["guideline_pct"] = (df["total_pml_krw"] / REGION_PML_GUIDELINE_KRW * 100).round(1)
+    df["climate_level"] = df["avg_climate_index"].apply(climate_risk_level)
 
-    def _status(pct: float) -> str:
+    def _status(pct: float, climate_level: str) -> str:
         if pct > 100:
             return "초과"
-        if pct >= 80:
+        if pct >= 80 or climate_level == "높음":
             return "주의"
         return "정상"
 
-    df["status"] = df["guideline_pct"].apply(_status)
+    df["status"] = df.apply(lambda r: _status(r["guideline_pct"], r["climate_level"]), axis=1)
     return df.sort_values("total_pml_krw", ascending=False).reset_index(drop=True)
 
 
@@ -3331,10 +3410,12 @@ def layout_property_region() -> html.Div:
 
     n_over = int((df["status"] == "초과").sum())
     n_warn = int((df["status"] == "주의").sum())
+    n_climate_high = int((df["climate_level"] == "높음").sum())
 
     table_rows = []
     for _, r in df.iterrows():
         status_color = REGION_STATUS_COLOR[r["status"]]
+        climate_color = CLIMATE_RISK_COLOR[r["climate_level"]]
         table_rows.append(html.Tr([
             html.Td(r["region"], style={"fontSize":"0.82rem","fontWeight":"700"}),
             html.Td(f"{r['property_count']}건", style={"fontSize":"0.8rem","textAlign":"right"}),
@@ -3344,6 +3425,9 @@ def layout_property_region() -> html.Div:
             html.Td(f"{r['total_pml_krw']/1e8:.1f}억", style={"fontSize":"0.8rem","textAlign":"right","color":"#e74c3c","fontWeight":"700"}),
             html.Td(f"{r['total_premium_krw']/1e4:,.0f}만", style={"fontSize":"0.8rem","textAlign":"right"}),
             html.Td(f"{r['guideline_pct']:.0f}%", style={"fontSize":"0.8rem","textAlign":"right"}),
+            html.Td(html.Span(f"{r['climate_level']} ({r['avg_climate_index']:.0f})",
+                    style={"background":climate_color,"color":"#fff","borderRadius":"4px",
+                           "padding":"1px 8px","fontSize":"0.74rem","fontWeight":"700"}), style={"textAlign":"center"}),
             html.Td(html.Span(r["status"], style={"background":status_color,"color":"#fff","borderRadius":"4px",
                     "padding":"1px 8px","fontSize":"0.74rem","fontWeight":"700"}), style={"textAlign":"center"}),
         ]))
@@ -3360,6 +3444,9 @@ def layout_property_region() -> html.Div:
             dbc.Col(kpi_card("전체 누적 PML", f"{df['total_pml_krw'].sum()/1e8:.0f}억 원", "#1a2942", "fa-triangle-exclamation"), md=3),
             dbc.Col(kpi_card("가이드라인 초과 지역", f"{n_over}개", "#e74c3c", "fa-circle-exclamation"), md=3),
             dbc.Col(kpi_card("주의 지역 (80%↑)", f"{n_warn}개", "#f39c12", "fa-triangle-exclamation"), md=3),
+        ], className="mb-2"),
+        dbc.Row([
+            dbc.Col(kpi_card("기후(강수) 리스크 높음 지역", f"{n_climate_high}개", "#8e44ad", "fa-cloud-rain"), md=3),
         ], className="mb-3"),
 
         dbc.Card(dbc.CardBody([
@@ -3379,12 +3466,15 @@ def layout_property_region() -> html.Div:
                     html.Th("누적 PML", style={"fontSize":"0.78rem","textAlign":"right"}),
                     html.Th("누적 보험료", style={"fontSize":"0.78rem","textAlign":"right"}),
                     html.Th("가이드라인 대비", style={"fontSize":"0.78rem","textAlign":"right"}),
+                    html.Th("기후(강수) 리스크", style={"fontSize":"0.78rem","textAlign":"center"}),
                     html.Th("상태", style={"fontSize":"0.78rem","textAlign":"center"}),
                 ], style={"background":"#f8f9fa"})),
                 html.Tbody(table_rows),
             ], bordered=False, striped=True, hover=True, size="sm", responsive=True),
             html.Div(
-                f"※ 가이드라인 한도: 지역별 누적 PML {REGION_PML_GUIDELINE_KRW/1e8:.0f}억 원 (80% 이상 '주의', 초과 시 '초과' — 신규 계약 인수/보유율 결정 시 참고)",
+                f"※ 가이드라인 한도: 지역별 누적 PML {REGION_PML_GUIDELINE_KRW/1e8:.0f}억 원 (80% 이상 '주의', 초과 시 '초과')."
+                " 기후(강수) 리스크는 강수 극한지수 종합지수의 전국 분포 상위 10%를 '높음'으로 표시하며,"
+                " '높음' 지역은 PML 가이드라인 대비가 80% 미만이어도 '주의'로 상향 — 신규 계약 인수/보유율 결정 시 참고",
                 style={"fontSize":"0.76rem","color":"#888","marginTop":"8px"},
             ),
         ]), style=CARD_STYLE),

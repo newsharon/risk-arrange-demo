@@ -13,6 +13,7 @@ __pycache__/
 .streamlit/
 .claude/
 *.csv
+!demo4/climate_grid_*.csv
 *.jsonl
 
 # IDE
